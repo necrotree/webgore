@@ -51,6 +51,8 @@ add_custom_command(TARGET Webgore POST_BUILD
         "${MINGW_RUNTIME_DIR}/libpng16-16.dll"
         "${MINGW_RUNTIME_DIR}/libsharpyuv-0.dll"
         "${MINGW_RUNTIME_DIR}/libsqlite3-0.dll"
+        "${MINGW_RUNTIME_DIR}/libssl-3-x64.dll"
+        "${MINGW_RUNTIME_DIR}/libcrypto-3-x64.dll"
         "${MINGW_RUNTIME_DIR}/libwebp-7.dll"
         "${MINGW_RUNTIME_DIR}/libwoff2common.dll"
         "${MINGW_RUNTIME_DIR}/libwoff2dec.dll"

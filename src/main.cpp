@@ -4,6 +4,8 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QProgressBar>
+#include <QSslConfiguration>
+#include <QSslSocket>
 #include <QStyle>
 #include <QToolBar>
 #include <QUrl>
@@ -76,6 +78,10 @@ private:
 
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
+
+    QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
+    sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
+    QSslConfiguration::setDefaultConfiguration(sslConfiguration);
 
     BrowserWindow browser;
     browser.show();
