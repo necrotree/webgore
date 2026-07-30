@@ -1,8 +1,12 @@
 #include <QAction>
 #include <QApplication>
 #include <QIcon>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
 #include <QProgressBar>
 #include <QSslConfiguration>
 #include <QSslSocket>
@@ -20,34 +24,41 @@ public:
         resize(1360, 860);
         setStyleSheet(R"(
             QMainWindow {
-                background: #f5f5f7;
+                background: #fbfbfd;
             }
             QToolBar#browserToolbar {
-                background: #f5f5f7;
+                background: #ffffff;
                 border: none;
-                border-bottom: 1px solid #dbdbe0;
-                padding: 8px 14px;
-                spacing: 6px;
+                border-bottom: 1px solid #e5e5ea;
+                padding: 10px 18px;
+                spacing: 8px;
+            }
+            QLabel#productName {
+                color: #1d1d1f;
+                font-size: 18px;
+                font-weight: 600;
+                padding-right: 14px;
             }
             QTabWidget::pane {
                 border: none;
             }
             QTabBar {
-                background: #ececef;
+                background: #ffffff;
                 border: none;
-                padding: 7px 12px 0 12px;
+                padding: 8px 18px 0 18px;
             }
             QTabBar::tab {
-                background: transparent;
+                background: #f2f2f7;
                 border: none;
-                border-radius: 8px 8px 0 0;
-                color: #606067;
+                border-radius: 7px 7px 0 0;
+                color: #6e6e73;
                 min-width: 150px;
                 padding: 8px 28px 8px 12px;
             }
             QTabBar::tab:selected {
-                background: #f5f5f7;
+                background: #ffffff;
                 color: #1d1d1f;
+                border-top: 2px solid #fa243c;
             }
             QTabBar::close-button {
                 image: none;
@@ -58,20 +69,29 @@ public:
                 border-radius: 6px;
             }
             QToolButton {
-                background: transparent;
-                border: none;
-                border-radius: 7px;
-                padding: 6px;
+                background: rgba(255, 255, 255, 168);
+                border: 1px solid rgba(255, 255, 255, 210);
+                border-radius: 9px;
+                padding: 5px;
             }
             QToolButton:hover {
-                background: #dedee3;
+                background: rgba(255, 255, 255, 238);
+                border: 1px solid #e1e1e7;
             }
             QToolButton:pressed {
-                background: #c9c9d0;
+                background: #e8e8ed;
+            }
+            QToolButton#newTabButton {
+                color: #fa243c;
+                font-size: 20px;
+                font-weight: 500;
+            }
+            QToolButton#newTabButton:hover {
+                background: #ffe9ec;
             }
             QLineEdit#addressBar {
-                background: #ffffff;
-                border: 1px solid #d8d8de;
+                background: #f2f2f7;
+                border: 1px solid transparent;
                 border-radius: 10px;
                 color: #1d1d1f;
                 min-height: 30px;
@@ -79,7 +99,8 @@ public:
                 selection-background-color: #007aff;
             }
             QLineEdit#addressBar:focus {
-                border: 1px solid #007aff;
+                background: #ffffff;
+                border: 1px solid #fa243c;
             }
             QProgressBar#loadProgress {
                 background: transparent;
@@ -87,7 +108,7 @@ public:
                 max-height: 3px;
             }
             QProgressBar#loadProgress::chunk {
-                background: #007aff;
+                background: #fa243c;
                 border-radius: 1px;
             }
         )");
@@ -103,10 +124,14 @@ public:
         toolbar->setMovable(false);
         toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
-        auto *backAction = toolbar->addAction(style()->standardIcon(QStyle::SP_ArrowBack), "Back");
-        auto *forwardAction = toolbar->addAction(style()->standardIcon(QStyle::SP_ArrowForward), "Forward");
-        auto *reloadAction = toolbar->addAction(style()->standardIcon(QStyle::SP_BrowserReload), "Reload");
-        auto *homeAction = toolbar->addAction(style()->standardIcon(QStyle::SP_DirHomeIcon), "Home");
+        auto *productName = new QLabel("Webgore", this);
+        productName->setObjectName("productName");
+        toolbar->addWidget(productName);
+
+        auto *backAction = toolbar->addAction(navigationIcon(NavigationIcon::Back), "Back");
+        auto *forwardAction = toolbar->addAction(navigationIcon(NavigationIcon::Forward), "Forward");
+        auto *reloadAction = toolbar->addAction(navigationIcon(NavigationIcon::Reload), "Reload");
+        auto *homeAction = toolbar->addAction(navigationIcon(NavigationIcon::Home), "Home");
         backAction->setToolTip("Back");
         forwardAction->setToolTip("Forward");
         reloadAction->setToolTip("Reload");
@@ -120,6 +145,7 @@ public:
         toolbar->addWidget(addressBar_);
 
         auto *newTabButton = new QToolButton(this);
+        newTabButton->setObjectName("newTabButton");
         newTabButton->setText("+");
         newTabButton->setToolTip("New tab");
         newTabButton->setFixedSize(30, 30);
@@ -158,6 +184,58 @@ public:
     }
 
 private:
+    enum class NavigationIcon {
+        Back,
+        Forward,
+        Reload,
+        Home,
+    };
+
+    static QIcon navigationIcon(NavigationIcon type) {
+        QPixmap pixmap(22, 22);
+        pixmap.fill(Qt::transparent);
+
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        QPen pen(QColor("#35353a"), 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+
+        if (type == NavigationIcon::Back || type == NavigationIcon::Forward) {
+            QPainterPath path;
+            if (type == NavigationIcon::Back) {
+                path.moveTo(14.0, 4.5);
+                path.lineTo(8.0, 11.0);
+                path.lineTo(14.0, 17.5);
+            } else {
+                path.moveTo(8.0, 4.5);
+                path.lineTo(14.0, 11.0);
+                path.lineTo(8.0, 17.5);
+            }
+            painter.drawPath(path);
+        } else if (type == NavigationIcon::Reload) {
+            QPainterPath path;
+            path.arcMoveTo(5, 5, 12, 12, 35);
+            path.arcTo(5, 5, 12, 12, 35, 285);
+            painter.drawPath(path);
+            painter.drawLine(16.5, 5.0, 16.5, 9.0);
+            painter.drawLine(16.5, 5.0, 12.5, 5.0);
+        } else {
+            QPainterPath path;
+            path.moveTo(4.5, 10.5);
+            path.lineTo(11.0, 4.8);
+            path.lineTo(17.5, 10.5);
+            path.lineTo(16.0, 10.5);
+            path.lineTo(16.0, 17.0);
+            path.lineTo(6.0, 17.0);
+            path.lineTo(6.0, 10.5);
+            path.closeSubpath();
+            painter.drawPath(path);
+        }
+
+        return QIcon(pixmap);
+    }
+
     static QUrl homeUrl() {
         return QUrl("https://www.google.com");
     }
