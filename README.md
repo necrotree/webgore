@@ -1,2 +1,2 @@
-# webgore
-A Windows browser made with WebKit,
+# Webgore
+A Windows browser made with WebKit.
